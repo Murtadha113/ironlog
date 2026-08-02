@@ -260,12 +260,14 @@ export default function Home() {
       </div>
 
       <p className="eyebrow">أو اختر عضلة</p>
-      <div className="chip-grid stagger-in">
-        {MUSCLES.map((m) => (
-          <div key={m.id} className="chip" onClick={() => navigate(`/muscle?muscle=${m.id}`)}>
-            {m.label}
-          </div>
-        ))}
+      <div className="card muscle-card stagger-in">
+        <div className="muscle-grid">
+          {MUSCLES.map((m) => (
+            <button key={m.id} type="button" className="muscle-tile" onClick={() => navigate(`/muscle?muscle=${m.id}`)}>
+              {m.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
