@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // صور الأجهزة اللي يصوّرها المستخدمين لطلب إضافة جهاز جديد
+    // القراءة مفتوحة (تحتاجها لوحة الأدمن لعرض الصورة)، والكتابة مفتوحة بس محدودة
+    // بالحجم والنوع عشان تقلل من احتمال إساءة الاستخدام
+    match /pending_machine_photos/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // صور جلسات الإضافة السريعة بدفتر المستخدم — نفس القيود
+    match /log_photos/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
