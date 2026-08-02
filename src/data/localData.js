@@ -55,7 +55,7 @@ export function isReturningUser() {
 }
 
 // اقتراح العضلة القادمة بناءً على آخر عضلة تم تدريبها (تناوب بسيط)
-const ROTATION = ['chest', 'back', 'shoulders', 'legs', 'arms', 'core'];
+const ROTATION = ['chest', 'back', 'shoulders', 'legs', 'biceps', 'triceps', 'core'];
 export function suggestNextMuscleFrom(lastMuscle) {
   if (!lastMuscle) return ROTATION[0];
   const idx = ROTATION.indexOf(lastMuscle);
