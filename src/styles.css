@@ -10,13 +10,13 @@
   --text: #F5F6F2;
   --text-muted: #8C8C88;
 
-  /* اللون المميز — أصفر-ليموني نار، بدل الأزرق */
-  --iron: #E4FF3D;
-  --iron-dark: #B8D400;
-  --iron-ink: #12140A;
-  --iron-tint: rgba(228, 255, 61, 0.14);
-  --iron-glow: rgba(228, 255, 61, 0.45);
-  --accent-2: #FFB300;
+  /* اللون المميز — أزرق حيوي على خلفية غامقة */
+  --iron: #4C8DFF;
+  --iron-dark: #2F5FD9;
+  --iron-ink: #FFFFFF;
+  --iron-tint: rgba(76, 141, 255, 0.16);
+  --iron-glow: rgba(76, 141, 255, 0.5);
+  --accent-2: #38BDF8;
 
   --plate: #35D399;
   --plate-tint: rgba(53, 211, 153, 0.14);
@@ -31,7 +31,7 @@
   --font-num: 'IBM Plex Mono', monospace;
 
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-btn: 0 8px 22px rgba(228, 255, 61, 0.25);
+  --shadow-btn: 0 8px 22px rgba(76, 141, 255, 0.35);
   --blur-glass: blur(22px);
 }
 
@@ -49,8 +49,8 @@ html, body, #root {
 body {
   direction: rtl;
   background:
-    radial-gradient(560px 420px at 90% -8%, rgba(228, 255, 61, 0.16), transparent 60%),
-    radial-gradient(480px 380px at -10% 100%, rgba(255, 179, 0, 0.1), transparent 55%),
+    radial-gradient(560px 420px at 90% -8%, rgba(76, 141, 255, 0.18), transparent 60%),
+    radial-gradient(480px 380px at -10% 100%, rgba(56, 189, 248, 0.1), transparent 55%),
     var(--bg);
   background-attachment: fixed;
   background-size: 140% 140%, 140% 140%, auto;
@@ -182,8 +182,8 @@ a { color: inherit; text-decoration: none; }
 .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; animation: none; }
 
 @keyframes pulse-shadow {
-  0%, 100% { box-shadow: 0 8px 22px rgba(228, 255, 61, 0.25); }
-  50% { box-shadow: 0 8px 30px rgba(228, 255, 61, 0.45); }
+  0%, 100% { box-shadow: 0 8px 22px rgba(76, 141, 255, 0.3); }
+  50% { box-shadow: 0 8px 30px rgba(76, 141, 255, 0.5); }
 }
 
 .btn-camera {
@@ -619,7 +619,7 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   color: var(--iron-ink);
   font-size: 22px;
-  box-shadow: 0 8px 22px rgba(228, 255, 61, 0.4);
+  box-shadow: 0 8px 22px rgba(76, 141, 255, 0.4);
   border: 3px solid var(--bg);
 }
 .nav-item-elevated span { color: var(--text-muted); font-size: 10px; font-weight: 600; }
@@ -656,7 +656,7 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(135deg, var(--iron), var(--iron-dark));
   color: var(--iron-ink);
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(228, 255, 61, 0.35);
+  box-shadow: 0 4px 14px rgba(76, 141, 255, 0.35);
 }
 
 .muscle-bar-row { margin-bottom: 10px; }

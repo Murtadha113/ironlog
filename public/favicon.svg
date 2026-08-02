@@ -9,8 +9,8 @@
   </g>
   <defs>
     <linearGradient id="ironlog-g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#E4FF3D" />
-      <stop offset="1" stop-color="#B8D400" />
+      <stop stop-color="#4C8DFF" />
+      <stop offset="1" stop-color="#2F5FD9" />
     </linearGradient>
   </defs>
 </svg>
