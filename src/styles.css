@@ -252,9 +252,26 @@ a { color: inherit; text-decoration: none; }
 .muscle-card {
   padding: 8px;
 }
+.muscle-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 8px;
+  cursor: pointer;
+}
 .muscle-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  margin-top: 4px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 4px;
 }
 .muscle-tile {
   background: transparent;

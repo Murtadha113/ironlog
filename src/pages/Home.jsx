@@ -13,6 +13,7 @@ import {
   Dumbbell,
   TrendingUp,
   BarChart3,
+  ChevronDown,
 } from 'lucide-react';
 import { MUSCLES } from '../data/seedMachines';
 import { fetchMachines } from '../data/machinesRepo';
@@ -36,6 +37,7 @@ export default function Home() {
   const [machines, setMachines] = useState([]);
   const [bannerDismissed, setBannerDismissed] = useState(localStorage.getItem(GUEST_BANNER_DISMISSED_KEY) === '1');
   const [query, setQuery] = useState('');
+  const [muscleOpen, setMuscleOpen] = useState(false);
   const returning = logs.length > 0;
   const lastLog = logs[0];
   const nextMuscle = MUSCLES.find((m) => m.id === suggestNextMuscleFrom(lastLog?.muscle));
@@ -259,15 +261,20 @@ export default function Home() {
         })}
       </div>
 
-      <p className="eyebrow">أو اختر عضلة</p>
       <div className="card muscle-card stagger-in">
-        <div className="muscle-grid">
-          {MUSCLES.map((m) => (
-            <button key={m.id} type="button" className="muscle-tile" onClick={() => navigate(`/muscle?muscle=${m.id}`)}>
-              {m.label}
-            </button>
-          ))}
-        </div>
+        <button type="button" className="muscle-toggle" onClick={() => setMuscleOpen((v) => !v)}>
+          <span>اختر عضلة</span>
+          <ChevronDown size={18} style={{ transform: muscleOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+        </button>
+        {muscleOpen && (
+          <div className="muscle-grid">
+            {MUSCLES.map((m) => (
+              <button key={m.id} type="button" className="muscle-tile" onClick={() => navigate(`/muscle?muscle=${m.id}`)}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
