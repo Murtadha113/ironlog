@@ -4,7 +4,7 @@ import { ArrowRight, LogOut, Trash2, Plus, X, Camera } from 'lucide-react';
 import { MUSCLES } from '../data/seedMachines';
 import { useLogs } from '../hooks/useLogs';
 import { useAuth } from '../hooks/useAuth';
-import { uploadLogPhoto } from '../data/userLogsRepo';
+import { fileToCompressedDataUrl } from '../data/imageUtils';
 
 export default function Notebook() {
   const navigate = useNavigate();
@@ -17,8 +17,8 @@ export default function Notebook() {
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
   const [sets, setSets] = useState('3');
-  const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
+  const [photoProcessing, setPhotoProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [quickError, setQuickError] = useState('');
 
@@ -32,18 +32,23 @@ export default function Notebook() {
     await deleteLog(id);
   }
 
-  function handlePhotoChange(e) {
+  async function handlePhotoChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    setPhotoProcessing(true);
+    try {
+      setPhotoPreview(await fileToCompressedDataUrl(file));
+    } catch {
+      // تجاهل — تصوير اختياري
+    } finally {
+      setPhotoProcessing(false);
+    }
   }
 
   function resetQuickForm() {
     setName('');
     setWeight('');
     setReps('');
-    setPhotoFile(null);
     setPhotoPreview('');
     setQuickOpen(false);
   }
@@ -54,10 +59,6 @@ export default function Notebook() {
     setSaving(true);
     setQuickError('');
     try {
-      let photo_url = '';
-      if (photoFile) {
-        photo_url = await uploadLogPhoto(photoFile);
-      }
       await addLog({
         machineId: `quick_${Date.now()}`,
         machineName: name.trim(),
@@ -67,7 +68,7 @@ export default function Notebook() {
         weight: Number(weight),
         reps: Number(reps),
         sets: Number(sets) || 1,
-        photo_url,
+        photo_url: photoPreview,
       });
       resetQuickForm();
     } catch (err) {
@@ -121,8 +122,8 @@ export default function Notebook() {
               </button>
             </div>
           ) : (
-            <button type="button" className="btn" style={{ width: '100%', marginBottom: 14, color: 'var(--text-muted)' }} onClick={() => fileInputRef.current?.click()}>
-              <Camera size={16} /> أضف صورة (اختياري)
+            <button type="button" className="btn" style={{ width: '100%', marginBottom: 14, color: 'var(--text-muted)' }} onClick={() => fileInputRef.current?.click()} disabled={photoProcessing}>
+              <Camera size={16} /> {photoProcessing ? 'يعالج الصورة...' : 'أضف صورة (اختياري)'}
             </button>
           )}
 

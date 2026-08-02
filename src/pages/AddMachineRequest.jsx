@@ -2,13 +2,14 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Camera, SwitchCamera, CheckCircle2 } from 'lucide-react';
 import { MUSCLES } from '../data/seedMachines';
-import { submitPendingMachine, uploadMachinePhoto } from '../data/machinesRepo';
+import { submitPendingMachine } from '../data/machinesRepo';
+import { fileToCompressedDataUrl } from '../data/imageUtils';
 
 export default function AddMachineRequest() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
+  const [photoProcessing, setPhotoProcessing] = useState(false);
   const [muscle, setMuscle] = useState('chest');
   const [company, setCompany] = useState('');
   const [description, setDescription] = useState('');
@@ -16,11 +17,17 @@ export default function AddMachineRequest() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
-  function handlePhotoChange(e) {
+  async function handlePhotoChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    setPhotoProcessing(true);
+    try {
+      setPhotoPreview(await fileToCompressedDataUrl(file));
+    } catch {
+      // تجاهل — تصوير اختياري
+    } finally {
+      setPhotoProcessing(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -28,14 +35,10 @@ export default function AddMachineRequest() {
     setSending(true);
     setError('');
     try {
-      let photo_url = '';
-      if (photoFile) {
-        photo_url = await uploadMachinePhoto(photoFile);
-      }
-      await submitPendingMachine({ muscle, company, description, photo_url });
+      await submitPendingMachine({ muscle, company, description, photo_url: photoPreview });
       setSent(true);
     } catch (err) {
-      setError('تعذر إرسال الطلب — تأكد من ربط Firebase Storage/Firestore');
+      setError('تعذر إرسال الطلب — تأكد من ربط Firestore');
     } finally {
       setSending(false);
     }
@@ -87,9 +90,9 @@ export default function AddMachineRequest() {
           </button>
         </div>
       ) : (
-        <button type="button" className="btn-camera" style={{ marginBottom: 16 }} onClick={() => fileInputRef.current?.click()}>
+        <button type="button" className="btn-camera" style={{ marginBottom: 16 }} onClick={() => fileInputRef.current?.click()} disabled={photoProcessing}>
           <Camera size={30} />
-          صوّر الجهاز بالكاميرا
+          {photoProcessing ? 'يعالج الصورة...' : 'صوّر الجهاز بالكاميرا'}
         </button>
       )}
 

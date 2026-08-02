@@ -1,15 +1,6 @@
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { getLogs, clearLogs } from './localData';
-
-// رفع صورة جلسة (من الإضافة السريعة بالدفتر) لـ Firebase Storage
-export async function uploadLogPhoto(file) {
-  const path = `log_photos/${Date.now()}_${file.name || 'photo.jpg'}`;
-  const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file);
-  return getDownloadURL(fileRef);
-}
 
 export async function fetchUserDoc(uid) {
   const snap = await getDoc(doc(db, 'users', uid));

@@ -7,8 +7,7 @@ import {
   doc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { SEED_MACHINES } from './seedMachines';
 import { getCustomExercises } from './customExercises';
 
@@ -42,14 +41,6 @@ export async function updateMachine(id, patch) {
 
 export async function deleteMachine(id) {
   return deleteDoc(doc(db, 'machines', id));
-}
-
-// رفع صورة الجهاز اللي صوّرها المستخدم لـ Firebase Storage
-export async function uploadMachinePhoto(file) {
-  const path = `pending_machine_photos/${Date.now()}_${file.name || 'photo.jpg'}`;
-  const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file);
-  return getDownloadURL(fileRef);
 }
 
 // طلبات إضافة جهاز من المستخدمين
