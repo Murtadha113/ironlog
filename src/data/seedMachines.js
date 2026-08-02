@@ -548,3 +548,79 @@ SEED_MACHINES.push(
   quick('dip_station_freestanding', 'Dip Station (Free-Standing)', 'ستاند الدبس', 'chest', IMG.dipStation, 'free_weight'),
   quick('weightlifting_platform', 'Weightlifting Platform', 'منصة رفع الأثقال', 'legs', IMG.plates, 'free_weight')
 );
+
+// فيديوهات يوتيوب حقيقية (تم التحقق منها) لتمارين الدفعة اللي أضيفت أعلاه —
+// معدات التخزين العامة (رفوف، أطباق أوزان، أجهزة كارديو ذاتية الشرح) ما لها فيديو، مثل باقي الكتالوج
+const VIDEOS = {
+  smith_bench_press: 'https://www.youtube.com/watch?v=nFAQ35hmCqU',
+  iso_lateral_chest_press: 'https://www.youtube.com/watch?v=I0buksJ_CYA',
+  decline_chest_press: 'https://www.youtube.com/watch?v=_DsWm45BCqg',
+  flat_db_bench: 'https://www.youtube.com/watch?v=M0tN99QgPyU',
+  incline_db_bench: 'https://www.youtube.com/watch?v=IP4oeKh1Sd4',
+  pullover_machine: 'https://www.youtube.com/watch?v=ZOwR5Ar81rg',
+
+  high_row: 'https://www.youtube.com/watch?v=UHrxqmzGgVg',
+  low_row: 'https://www.youtube.com/watch?v=2h_OoQ9KioI',
+  iso_lateral_row: 'https://www.youtube.com/watch?v=A_DadG7iYUg',
+  reverse_hyperextension: 'https://www.youtube.com/watch?v=uQqR1NHfsSU',
+  pullup_bar_fixed: 'https://www.youtube.com/watch?v=MhokcbRLP5w',
+
+  reverse_pec_deck: 'https://www.youtube.com/watch?v=-TKqxK7-ehc',
+  cable_lateral_raise: 'https://www.youtube.com/watch?v=qitQHqNZbeM',
+  front_raise_machine: 'https://www.youtube.com/watch?v=CH9JzDStL3U',
+  shrug_machine: 'https://www.youtube.com/watch?v=HdoeBEuuS1c',
+  smith_shoulder_press: 'https://www.youtube.com/watch?v=kYZ0aUEzgEQ',
+  cable_face_pull: 'https://www.youtube.com/watch?v=eTCBSFlCJ_s',
+
+  cable_bicep_curl: 'https://www.youtube.com/watch?v=2MUEL4nL6hA',
+  overhead_tricep_ext: 'https://www.youtube.com/watch?v=GzmlxvSFE7A',
+  tricep_dip_machine: 'https://www.youtube.com/watch?v=EBnq0A5L_wo',
+  wrist_curl_machine: 'https://www.youtube.com/watch?v=SqwIBiru46w',
+  reverse_curl_machine: 'https://www.youtube.com/watch?v=pXx38ZWRYjo',
+  spider_curl_bench: 'https://www.youtube.com/watch?v=CITtSuda0Fg',
+  concentration_curl_bench: 'https://www.youtube.com/watch?v=oPGBZHIxusU',
+
+  hack_squat: 'https://www.youtube.com/watch?v=fE5BWPy7uRc',
+  lying_leg_curl: 'https://www.youtube.com/watch?v=vl5nUdE9mWM',
+  hip_abductor: 'https://www.youtube.com/watch?v=OjI5OpV6IWA',
+  hip_adductor: 'https://www.youtube.com/watch?v=04MfElceEow',
+  standing_calf_raise: 'https://www.youtube.com/watch?v=SVtg-1loH4c',
+  donkey_calf_raise: 'https://www.youtube.com/watch?v=wuI4jjPS6vg',
+  glute_kickback: 'https://www.youtube.com/watch?v=WhtxQnm4254',
+  belt_squat: 'https://www.youtube.com/watch?v=ZuNAnNLIpVQ',
+  sissy_squat: 'https://www.youtube.com/watch?v=4Y30vn1IIe8',
+  vertical_leg_press: 'https://www.youtube.com/watch?v=y0CiJW9lczg',
+  ghd: 'https://www.youtube.com/watch?v=YB3KwpzaUp0',
+
+  rotary_torso: 'https://www.youtube.com/watch?v=yurRR0UxEI0',
+  captains_chair: 'https://www.youtube.com/watch?v=nBsP27-x7LU',
+  roman_chair_situp: 'https://www.youtube.com/watch?v=QlCZYuOa6jg',
+  ab_coaster: 'https://www.youtube.com/watch?v=oYOUn0B7jLY',
+  decline_situp_bench: 'https://www.youtube.com/watch?v=QhGU5cmNZds',
+  hanging_ab_straps: 'https://www.youtube.com/watch?v=5wXOq2zEgL0',
+
+  trx_trainer: 'https://www.youtube.com/watch?v=6J1besHI9As',
+  sled_push_pull: 'https://www.youtube.com/watch?v=QaTrePoCT4g',
+  battle_ropes: 'https://www.youtube.com/watch?v=_nkQ9ej1CFs',
+  plyo_box: 'https://www.youtube.com/watch?v=Bc_ycZFCEvQ',
+  kettlebell_station: 'https://www.youtube.com/watch?v=bDCeXbMJVNs',
+  landmine_station: 'https://www.youtube.com/watch?v=3gYz0bLG-wY',
+  gymnastic_rings: 'https://www.youtube.com/watch?v=_HCFy_Lkh60',
+  agility_ladder: 'https://www.youtube.com/watch?v=z1OhMhCZa8I',
+  medicine_ball_wall: 'https://www.youtube.com/watch?v=ttK0wpULGhQ',
+  sandbag_station: 'https://www.youtube.com/watch?v=a0CLBGusVL8',
+
+  neck_machine_4way: 'https://www.youtube.com/watch?v=03uvbNQP-Do',
+  neck_harness: 'https://www.youtube.com/watch?v=e0PyIvz7--U',
+  wrist_roller: 'https://www.youtube.com/watch?v=gUYXMoBpT8o',
+  grip_strength_trainer: 'https://www.youtube.com/watch?v=hK0pRkknQJg',
+
+  trap_bar: 'https://www.youtube.com/watch?v=EsqwERaSTMI',
+  preacher_curl_bench: 'https://www.youtube.com/shorts/Htw-s61mOw0',
+  dip_station_freestanding: 'https://www.youtube.com/watch?v=nyymAfre3s0',
+};
+
+for (const machine of SEED_MACHINES) {
+  const url = VIDEOS[machine.id];
+  if (url && machine.positions[0]) machine.positions[0].video_url = url;
+}
