@@ -56,7 +56,7 @@ export default function Home() {
   function startPlanDay() {
     advancePlanDay(plan.days.length);
     if (today.exercises?.length) {
-      navigate(`/log/${today.exercises[0].machineId}`);
+      navigate('/plan-day');
     } else {
       navigate(`/muscle?muscle=${today.muscles[0]}`);
     }
@@ -124,29 +124,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {today?.exercises?.length > 0 && (
-        <>
-          <p className="eyebrow">خطة اليوم — {today.label}</p>
-          <div style={{ marginBottom: 22 }}>
-            {today.exercises.map((ex) => {
-              const m = machineFor(ex.machineId);
-              return (
-                <div key={ex.machineId} className="continue-row" onClick={() => navigate(`/log/${ex.machineId}`)}>
-                  {m?.image_url && <img src={m.image_url} alt={ex.machineName} />}
-                  <div className="cr-body">
-                    <p className="cr-title">{ex.machineName}</p>
-                    {ex.weight && (
-                      <p style={{ margin: 0, fontSize: 12, color: 'var(--iron)', fontWeight: 700 }}>{ex.weight} كغ</p>
-                    )}
-                  </div>
-                  <div className="cr-play"><Play size={14} fill="currentColor" /></div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
 
       <div className="field" style={{ position: 'relative', marginBottom: searchResults.length || trimmedQuery ? 8 : 16 }}>
         <Search

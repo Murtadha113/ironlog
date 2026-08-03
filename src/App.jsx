@@ -9,6 +9,7 @@ import AddMachineRequest from './pages/AddMachineRequest';
 import CustomExercise from './pages/CustomExercise';
 import Scan from './pages/Scan';
 import Plan from './pages/Plan';
+import PlanDay from './pages/PlanDay';
 import Profile from './pages/Profile';
 import Notebook from './pages/Notebook';
 import Welcome from './pages/Welcome';
@@ -47,6 +48,7 @@ function UserApp() {
         <Route path="/custom-exercise" element={<CustomExercise />} />
         <Route path="/scan" element={<Scan />} />
         <Route path="/plan" element={<Plan />} />
+        <Route path="/plan-day" element={<PlanDay />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/notebook" element={<Notebook />} />
       </Routes>
