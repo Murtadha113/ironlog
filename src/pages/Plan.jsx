@@ -6,39 +6,94 @@ import { MUSCLES } from '../data/seedMachines';
 import { fetchMachines } from '../data/machinesRepo';
 import { getSelectedPlanId, setSelectedPlan, clearPlan } from '../data/planRepo';
 import { getCustomPlans, saveCustomPlan, deleteCustomPlan } from '../data/customPlans';
+import { useCustomExercises } from '../hooks/useCustomExercises';
 
 const emptyDay = (n) => ({ label: `يوم ${n}`, muscles: [], exercises: [] });
 
-function ExercisePicker({ machines, onAdd }) {
+const EQUIPMENT_FILTERS = [
+  { id: 'all', label: 'الكل' },
+  { id: 'machine', label: 'جهاز' },
+  { id: 'free_weight', label: 'حر' },
+];
+
+function ExercisePicker({ machines, dayMuscles, onAdd, onAddCustom }) {
   const [q, setQ] = useState('');
+  const [equipmentFilter, setEquipmentFilter] = useState('all');
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customName, setCustomName] = useState('');
   const query = q.trim().toLowerCase();
-  const results = query
-    ? machines.filter((m) => m.name_ar.toLowerCase().includes(query) || m.name.toLowerCase().includes(query)).slice(0, 6)
-    : [];
+
+  const pool = dayMuscles.length ? machines.filter((m) => dayMuscles.includes(m.muscle)) : machines;
+  const filtered = pool.filter((m) => {
+    if (equipmentFilter !== 'all' && (m.equipment || 'machine') !== equipmentFilter) return false;
+    if (query) return m.name_ar.toLowerCase().includes(query) || m.name.toLowerCase().includes(query);
+    return true;
+  });
+
+  function submitCustom() {
+    if (!customName.trim()) return;
+    onAddCustom(customName.trim());
+    setCustomName('');
+    setShowCustomForm(false);
+  }
+
   return (
-    <div style={{ marginTop: 10 }}>
-      <input
-        placeholder="دوّر على جهاز تضيفه لهذا اليوم..."
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-      {results.length > 0 && (
-        <div style={{ marginTop: 6, border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-          {results.map((m) => (
-            <div
-              key={m.id}
-              className="list-row"
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onAdd(m);
-                setQ('');
-              }}
-            >
-              <span>{m.name_ar}</span>
-              <Plus size={14} />
-            </div>
-          ))}
+    <div style={{ marginTop: 12 }}>
+      {dayMuscles.length === 0 ? (
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>اختر عضلة فوق الأول، عشان نطلعلك تمارينها</p>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            {EQUIPMENT_FILTERS.map((f) => (
+              <span
+                key={f.id}
+                className="plan-day-chip"
+                style={{
+                  cursor: 'pointer',
+                  background: equipmentFilter === f.id ? 'var(--iron)' : 'var(--surface-sunken)',
+                  color: equipmentFilter === f.id ? 'var(--iron-ink)' : 'var(--text-muted)',
+                }}
+                onClick={() => setEquipmentFilter(f.id)}
+              >
+                {f.label}
+              </span>
+            ))}
+          </div>
+          <input placeholder="دوّر بين تمارين هذي العضلة..." value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 8 }} />
+          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)' }}>
+            {filtered.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: 12, margin: 0 }}>ما فيه نتائج</p>
+            ) : (
+              filtered.slice(0, 30).map((m) => (
+                <div key={m.id} className="list-row" style={{ cursor: 'pointer' }} onClick={() => onAdd(m)}>
+                  <span>{m.name_ar}</span>
+                  <Plus size={14} />
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {showCustomForm ? (
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          <input
+            placeholder="اسم جهازك الخاص"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button type="button" className="btn" onClick={submitCustom}>إضافة</button>
         </div>
+      ) : (
+        <button
+          type="button"
+          className="btn btn-ghost"
+          style={{ fontSize: 12, color: 'var(--iron)', marginTop: 10, padding: '6px 0' }}
+          onClick={() => setShowCustomForm(true)}
+        >
+          <Plus size={14} /> جهازك الخاص مو موجود؟ ضيفه
+        </button>
       )}
     </div>
   );
@@ -52,6 +107,7 @@ export default function Plan() {
   const [planName, setPlanName] = useState('');
   const [days, setDays] = useState([emptyDay(1)]);
   const [machines, setMachines] = useState([]);
+  const { addCustomExercise } = useCustomExercises();
 
   useEffect(() => {
     fetchMachines().then(setMachines);
@@ -115,6 +171,14 @@ export default function Plan() {
         };
       })
     );
+  }
+
+  async function addCustomExerciseToDay(index, name) {
+    const day = days[index];
+    const muscle = day.muscles[0] || 'chest';
+    const entry = await addCustomExercise({ name, muscle, equipment: 'machine', videoUrl: '' });
+    setMachines((m) => [entry, ...m]);
+    addExercise(index, entry);
   }
 
   function removeExercise(index, exIndex) {
@@ -218,7 +282,12 @@ export default function Plan() {
               </div>
             )}
 
-            <ExercisePicker machines={machines} onAdd={(m) => addExercise(i, m)} />
+            <ExercisePicker
+              machines={machines}
+              dayMuscles={day.muscles}
+              onAdd={(m) => addExercise(i, m)}
+              onAddCustom={(name) => addCustomExerciseToDay(i, name)}
+            />
           </div>
         ))}
 
