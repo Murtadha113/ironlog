@@ -10,10 +10,11 @@ export default function CustomExercise() {
   const [params] = useSearchParams();
   const { addCustomExercise } = useCustomExercises();
   const fileInputRef = useRef(null);
+  const scannedVideoUrl = params.get('videoUrl') || '';
   const [name, setName] = useState('');
   const [muscle, setMuscle] = useState(params.get('muscle') || 'chest');
   const [equipment, setEquipment] = useState('free_weight');
-  const [videoUrl, setVideoUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState(scannedVideoUrl);
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoProcessing, setPhotoProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -55,6 +56,14 @@ export default function CustomExercise() {
       <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '-6px 0 16px' }}>
         يتحفظ بحسابك ويطلع لك بكل مكان — بحث، اختيار عضلة، خطتك
       </p>
+
+      {scannedVideoUrl && (
+        <div className="card" style={{ marginBottom: 16, background: 'var(--iron-tint)', border: 'none' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>
+            لقينا فيديو بكود الـ QR اللي مسحته — كمّل بيانات الجهاز واحفظه، والفيديو بيتربط فيه تلقائي
+          </p>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}

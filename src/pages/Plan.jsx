@@ -1,12 +1,48 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Plus, Trash2, X } from 'lucide-react';
 import { PLANS } from '../data/plans';
 import { MUSCLES } from '../data/seedMachines';
+import { fetchMachines } from '../data/machinesRepo';
 import { getSelectedPlanId, setSelectedPlan, clearPlan } from '../data/planRepo';
 import { getCustomPlans, saveCustomPlan, deleteCustomPlan } from '../data/customPlans';
 
-const emptyDay = (n) => ({ label: `يوم ${n}`, muscles: [] });
+const emptyDay = (n) => ({ label: `يوم ${n}`, muscles: [], exercises: [] });
+
+function ExercisePicker({ machines, onAdd }) {
+  const [q, setQ] = useState('');
+  const query = q.trim().toLowerCase();
+  const results = query
+    ? machines.filter((m) => m.name_ar.toLowerCase().includes(query) || m.name.toLowerCase().includes(query)).slice(0, 6)
+    : [];
+  return (
+    <div style={{ marginTop: 10 }}>
+      <input
+        placeholder="دوّر على جهاز تضيفه لهذا اليوم..."
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+      />
+      {results.length > 0 && (
+        <div style={{ marginTop: 6, border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+          {results.map((m) => (
+            <div
+              key={m.id}
+              className="list-row"
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onAdd(m);
+                setQ('');
+              }}
+            >
+              <span>{m.name_ar}</span>
+              <Plus size={14} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Plan() {
   const navigate = useNavigate();
@@ -15,6 +51,11 @@ export default function Plan() {
   const [building, setBuilding] = useState(false);
   const [planName, setPlanName] = useState('');
   const [days, setDays] = useState([emptyDay(1)]);
+  const [machines, setMachines] = useState([]);
+
+  useEffect(() => {
+    fetchMachines().then(setMachines);
+  }, []);
 
   function choose(planId) {
     setSelectedPlan(planId);
@@ -61,9 +102,38 @@ export default function Plan() {
     );
   }
 
+  function addExercise(index, machine) {
+    setDays((d) =>
+      d.map((day, i) => {
+        if (i !== index) return day;
+        if (day.exercises.some((e) => e.machineId === machine.id)) return day;
+        const muscles = day.muscles.includes(machine.muscle) ? day.muscles : [...day.muscles, machine.muscle];
+        return {
+          ...day,
+          muscles,
+          exercises: [...day.exercises, { machineId: machine.id, machineName: machine.name_ar, weight: '' }],
+        };
+      })
+    );
+  }
+
+  function removeExercise(index, exIndex) {
+    setDays((d) =>
+      d.map((day, i) => (i === index ? { ...day, exercises: day.exercises.filter((_, j) => j !== exIndex) } : day))
+    );
+  }
+
+  function updateExerciseWeight(index, exIndex, weight) {
+    setDays((d) =>
+      d.map((day, i) =>
+        i === index ? { ...day, exercises: day.exercises.map((e, j) => (j === exIndex ? { ...e, weight } : e)) } : day
+      )
+    );
+  }
+
   function saveBuilder(e) {
     e.preventDefault();
-    const cleanDays = days.filter((d) => d.muscles.length > 0);
+    const cleanDays = days.filter((d) => d.muscles.length > 0 || d.exercises.length > 0);
     if (!planName.trim() || cleanDays.length === 0) return;
     const plan = saveCustomPlan({ name: planName.trim(), days: cleanDays });
     setCustomPlans(getCustomPlans());
@@ -118,6 +188,37 @@ export default function Plan() {
                 </span>
               ))}
             </div>
+
+            {day.exercises.length > 0 && (
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {day.exercises.map((ex, ei) => (
+                  <div key={ex.machineId} className="list-row">
+                    <span style={{ fontSize: 13 }}>{ex.machineName}</span>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.5"
+                        placeholder="كغ"
+                        value={ex.weight}
+                        onChange={(e) => updateExerciseWeight(i, ei, e.target.value)}
+                        style={{ width: 64, padding: '6px 8px', fontSize: 13 }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        style={{ padding: 4, color: 'var(--danger)' }}
+                        onClick={() => removeExercise(i, ei)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <ExercisePicker machines={machines} onAdd={(m) => addExercise(i, m)} />
           </div>
         ))}
 

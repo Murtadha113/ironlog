@@ -7,6 +7,8 @@ import { useLogs } from '../hooks/useLogs';
 import RestTimer from '../components/RestTimer';
 import ProgressChart from '../components/ProgressChart';
 import { toEmbedUrl } from '../data/youtube';
+import { getSelectedPlanId } from '../data/planRepo';
+import { getPlan } from '../data/plans';
 
 const VIDEO_TYPE_LABEL = {
   tutorial: 'شرح الاستخدام',
@@ -43,6 +45,21 @@ export default function LogSession() {
 
   const history = positionId ? filterByMachine(logs, machineId, positionId) : [];
 
+  // أول استخدام (بدون سجل سابق) — نعبّي الوزن من خطة المستخدم لو حدده وقت بناء الخطة
+  useEffect(() => {
+    if (weight || history.length > 0) return;
+    const planId = getSelectedPlanId();
+    const plan = planId ? getPlan(planId) : null;
+    if (!plan) return;
+    for (const day of plan.days) {
+      const ex = day.exercises?.find((e) => e.machineId === machineId && e.weight);
+      if (ex) {
+        setWeight(String(ex.weight));
+        break;
+      }
+    }
+  }, [machineId, positionId, history.length]);
+
   if (!machine) {
     return (
       <div className="screen">
@@ -76,6 +93,10 @@ export default function LogSession() {
   }
 
   function toggleVideo(url) {
+    if (!toEmbedUrl(url)) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
     setActiveVideoUrl((current) => (current === url ? null : url));
   }
 

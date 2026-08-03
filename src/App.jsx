@@ -18,6 +18,7 @@ import Login from './pages/auth/Login';
 import BottomNav from './components/BottomNav';
 import Logo from './components/Logo';
 import Splash from './components/Splash';
+import AppTutorial, { tutorialSeen } from './components/AppTutorial';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminMachines from './pages/admin/AdminMachines';
@@ -26,6 +27,8 @@ import { useAuth, isGuest } from './hooks/useAuth';
 
 function UserApp() {
   const navigate = useNavigate();
+  const [showTutorial, setShowTutorial] = useState(!tutorialSeen());
+
   return (
     <div className="app-shell">
       <div className="topbar">
@@ -48,6 +51,7 @@ function UserApp() {
         <Route path="/notebook" element={<Notebook />} />
       </Routes>
       <BottomNav />
+      {showTutorial && <AppTutorial onDone={() => setShowTutorial(false)} />}
     </div>
   );
 }

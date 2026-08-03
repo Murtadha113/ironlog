@@ -29,9 +29,15 @@ export default function Scan() {
       const found = machinesRef.current.find((m) => m.id === id);
       if (found) {
         navigate(`/log/${found.id}`);
-      } else {
-        setError('كود QR غير معروف — جرب جهاز ثاني أو اختره يدوياً من القائمة');
+        return;
       }
+      // مو كود IronLog — لو كود QR الجهاز نفسه (من الشركة المصنعة) يودي لفيديو،
+      // نستخدمه ونربطه بجهاز جديد بدل ما نوقف المستخدم برسالة خطأ
+      if (/^https?:\/\//i.test(text)) {
+        navigate(`/custom-exercise?videoUrl=${encodeURIComponent(text)}`);
+        return;
+      }
+      setError('كود QR غير معروف — جرب جهاز ثاني أو اختره يدوياً من القائمة');
     }
 
     function tick() {

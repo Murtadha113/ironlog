@@ -22,6 +22,11 @@ export default function Notebook() {
   const [saving, setSaving] = useState(false);
   const [quickError, setQuickError] = useState('');
 
+  const groupedByMuscle = MUSCLES.map((m) => ({
+    muscle: m,
+    entries: logs.filter((l) => l.muscle === m.id),
+  })).filter((g) => g.entries.length > 0);
+
   async function handleLogout() {
     await logout();
     navigate('/welcome');
@@ -195,35 +200,39 @@ export default function Notebook() {
         <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>ما فيه تمارين مسجلة بعد.</p>
       )}
 
-      <div className="card">
-        {logs.map((l) => (
-          <div key={l.id} className="list-row">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {l.photo_url && (
-                <img src={l.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-              )}
-              <div>
-                <p style={{ margin: 0, fontWeight: 600 }}>{l.machineName}</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
-                  {MUSCLES.find((m) => m.id === l.muscle)?.label} · {l.positionName} ·{' '}
-                  {new Date(l.date).toLocaleDateString('ar')}
-                </p>
+      {groupedByMuscle.map((group) => (
+        <div key={group.muscle.id} style={{ marginBottom: 16 }}>
+          <p className="eyebrow">{group.muscle.label} ({group.entries.length})</p>
+          <div className="card">
+            {group.entries.map((l) => (
+              <div key={l.id} className="list-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {l.photo_url && (
+                    <img src={l.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                  )}
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 600 }}>{l.machineName}</p>
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
+                      {l.positionName} · {new Date(l.date).toLocaleDateString('ar')}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="num">{l.weight}كغ × {l.reps}</span>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ padding: 6, color: 'var(--danger)' }}
+                    onClick={() => handleDelete(l.id)}
+                    aria-label="حذف"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span className="num">{l.weight}كغ × {l.reps}</span>
-              <button
-                className="btn btn-ghost"
-                style={{ padding: 6, color: 'var(--danger)' }}
-                onClick={() => handleDelete(l.id)}
-                aria-label="حذف"
-              >
-                <Trash2 size={17} />
-              </button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
