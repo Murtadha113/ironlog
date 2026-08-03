@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, Plus, Trash2, X } from 'lucide-react';
+import { ArrowRight, Check, Plus, Trash2, X, ChevronUp, ChevronDown, Pencil, AlertTriangle } from 'lucide-react';
 import { PLANS } from '../data/plans';
 import { MUSCLES } from '../data/seedMachines';
 import { fetchMachines } from '../data/machinesRepo';
@@ -104,9 +104,11 @@ export default function Plan() {
   const [selected, setSelected] = useState(getSelectedPlanId());
   const [customPlans, setCustomPlans] = useState(getCustomPlans());
   const [building, setBuilding] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState(null);
   const [planName, setPlanName] = useState('');
   const [days, setDays] = useState([emptyDay(1)]);
   const [machines, setMachines] = useState([]);
+  const [duplicateWarning, setDuplicateWarning] = useState(null);
   const { addCustomExercise } = useCustomExercises();
 
   useEffect(() => {
@@ -131,8 +133,25 @@ export default function Plan() {
   }
 
   function startBuilding() {
+    setEditingPlanId(null);
     setPlanName('');
     setDays([emptyDay(1)]);
+    setDuplicateWarning(null);
+    setBuilding(true);
+  }
+
+  function editPlan(p, e) {
+    e?.stopPropagation();
+    setEditingPlanId(p.custom ? p.id : null);
+    setPlanName(p.custom ? p.name : `${p.name} (نسختي)`);
+    setDays(
+      p.days.map((d) => ({
+        label: d.label,
+        muscles: [...(d.muscles || [])],
+        exercises: (d.exercises || []).map((ex) => ({ ...ex })),
+      }))
+    );
+    setDuplicateWarning(null);
     setBuilding(true);
   }
 
@@ -159,17 +178,54 @@ export default function Plan() {
   }
 
   function addExercise(index, machine) {
+    setDuplicateWarning(null);
     setDays((d) =>
       d.map((day, i) => {
         if (i !== index) return day;
         if (day.exercises.some((e) => e.machineId === machine.id)) return day;
+
+        const topTarget = machine.target_muscles?.[0]?.label;
+        if (topTarget) {
+          const already = day.exercises.some((e) => {
+            const em = machines.find((mm) => mm.id === e.machineId);
+            return em?.target_muscles?.[0]?.label === topTarget;
+          });
+          if (already) {
+            setDuplicateWarning({ dayIndex: index, muscle: topTarget });
+          }
+        }
+
         const muscles = day.muscles.includes(machine.muscle) ? day.muscles : [...day.muscles, machine.muscle];
         return {
           ...day,
           muscles,
-          exercises: [...day.exercises, { machineId: machine.id, machineName: machine.name_ar, weight: '' }],
+          exercises: [
+            ...day.exercises,
+            { machineId: machine.id, machineName: machine.name_ar, weight: '', sets: 3, reps: 10, rest: 60, notes: '' },
+          ],
         };
       })
+    );
+  }
+
+  function moveExercise(index, exIndex, dir) {
+    setDays((d) =>
+      d.map((day, i) => {
+        if (i !== index) return day;
+        const target = exIndex + dir;
+        if (target < 0 || target >= day.exercises.length) return day;
+        const exercises = [...day.exercises];
+        [exercises[exIndex], exercises[target]] = [exercises[target], exercises[exIndex]];
+        return { ...day, exercises };
+      })
+    );
+  }
+
+  function updateExerciseField(index, exIndex, field, value) {
+    setDays((d) =>
+      d.map((day, i) =>
+        i === index ? { ...day, exercises: day.exercises.map((e, j) => (j === exIndex ? { ...e, [field]: value } : e)) } : day
+      )
     );
   }
 
@@ -187,19 +243,11 @@ export default function Plan() {
     );
   }
 
-  function updateExerciseWeight(index, exIndex, weight) {
-    setDays((d) =>
-      d.map((day, i) =>
-        i === index ? { ...day, exercises: day.exercises.map((e, j) => (j === exIndex ? { ...e, weight } : e)) } : day
-      )
-    );
-  }
-
   function saveBuilder(e) {
     e.preventDefault();
     const cleanDays = days.filter((d) => d.muscles.length > 0 || d.exercises.length > 0);
     if (!planName.trim() || cleanDays.length === 0) return;
-    const plan = saveCustomPlan({ name: planName.trim(), days: cleanDays });
+    const plan = saveCustomPlan({ id: editingPlanId || undefined, name: planName.trim(), days: cleanDays });
     setCustomPlans(getCustomPlans());
     choose(plan.id);
     setBuilding(false);
@@ -254,31 +302,64 @@ export default function Plan() {
             </div>
 
             {day.exercises.length > 0 && (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {day.exercises.map((ex, ei) => (
-                  <div key={ex.machineId} className="list-row">
-                    <span style={{ fontSize: 13 }}>{ex.machineName}</span>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.5"
-                        placeholder="كغ"
-                        value={ex.weight}
-                        onChange={(e) => updateExerciseWeight(i, ei, e.target.value)}
-                        style={{ width: 64, padding: '6px 8px', fontSize: 13 }}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        style={{ padding: 4, color: 'var(--danger)' }}
-                        onClick={() => removeExercise(i, ei)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {day.exercises.map((ex, ei) => {
+                  const m = machines.find((mm) => mm.id === ex.machineId);
+                  const topMuscle = m?.target_muscles?.[0]?.label;
+                  return (
+                    <div key={ex.machineId} style={{ background: 'var(--surface-sunken)', borderRadius: 'var(--radius-sm)', padding: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                        <div>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{ex.machineName}</p>
+                          {topMuscle && (
+                            <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>🎯 يستهدف: {topMuscle}</p>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: 2 }}>
+                          <button type="button" className="btn btn-ghost" style={{ padding: 4 }} disabled={ei === 0} onClick={() => moveExercise(i, ei, -1)}>
+                            <ChevronUp size={14} />
+                          </button>
+                          <button type="button" className="btn btn-ghost" style={{ padding: 4 }} disabled={ei === day.exercises.length - 1} onClick={() => moveExercise(i, ei, 1)}>
+                            <ChevronDown size={14} />
+                          </button>
+                          <button type="button" className="btn btn-ghost" style={{ padding: 4, color: 'var(--danger)' }} onClick={() => removeExercise(i, ei)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 10, color: 'var(--text-muted)' }}>مجموعات</label>
+                          <input type="number" inputMode="numeric" value={ex.sets} onChange={(e) => updateExerciseField(i, ei, 'sets', e.target.value)} style={{ padding: '6px 8px', fontSize: 13 }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 10, color: 'var(--text-muted)' }}>تكرارات</label>
+                          <input type="number" inputMode="numeric" value={ex.reps} onChange={(e) => updateExerciseField(i, ei, 'reps', e.target.value)} style={{ padding: '6px 8px', fontSize: 13 }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 10, color: 'var(--text-muted)' }}>راحة (ث)</label>
+                          <input type="number" inputMode="numeric" value={ex.rest} onChange={(e) => updateExerciseField(i, ei, 'rest', e.target.value)} style={{ padding: '6px 8px', fontSize: 13 }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ fontSize: 10, color: 'var(--text-muted)' }}>وزن (كغ)</label>
+                          <input type="number" inputMode="decimal" step="0.5" placeholder="اختياري" value={ex.weight} onChange={(e) => updateExerciseField(i, ei, 'weight', e.target.value)} style={{ padding: '6px 8px', fontSize: 13 }} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+            )}
+
+            {duplicateWarning?.dayIndex === i && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, padding: 10, borderRadius: 'var(--radius-sm)', background: 'var(--danger-tint)' }}>
+                <AlertTriangle size={16} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+                <p style={{ margin: 0, fontSize: 12 }}>
+                  {duplicateWarning.muscle} مستهدفة بالفعل بتمرين ثاني هذا اليوم — تبي تضيف تنوع أو تكثيف؟ خلها إذا قصدك، أو احذف وحدة.
+                </p>
+                <button type="button" className="btn btn-ghost" style={{ padding: 4, marginInlineStart: 'auto' }} onClick={() => setDuplicateWarning(null)}>
+                  <X size={14} />
+                </button>
               </div>
             )}
 
@@ -335,6 +416,9 @@ export default function Plan() {
                       <Check size={12} /> مفعّلة
                     </span>
                   )}
+                  <button className="btn btn-ghost" style={{ padding: 4, color: 'var(--text-muted)' }} onClick={(e) => editPlan(p, e)} aria-label="عدّل">
+                    <Pencil size={14} />
+                  </button>
                   {p.custom && (
                     <button className="btn btn-ghost" style={{ padding: 4, color: 'var(--danger)' }} onClick={(e) => removeCustomPlan(p.id, e)}>
                       <X size={14} />
@@ -343,11 +427,20 @@ export default function Plan() {
                 </div>
               </div>
               {p.desc && <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{p.desc}</p>}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {p.days.map((d, i) => (
-                  <span key={i} className="plan-day-chip">
-                    {d.label}: {d.muscles.map((m) => MUSCLES.find((mu) => mu.id === m)?.label).join('، ')}
-                  </span>
+                  <div key={i}>
+                    <span className="plan-day-chip" style={{ marginBottom: 4, display: 'inline-block' }}>{d.label}</span>
+                    {d.exercises?.length > 0 ? (
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                        {d.exercises.map((ex) => ex.machineName || machines.find((m) => m.id === ex.machineId)?.name_ar).filter(Boolean).join('، ')}
+                      </p>
+                    ) : (
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                        {d.muscles.map((m) => MUSCLES.find((mu) => mu.id === m)?.label).join('، ')}
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

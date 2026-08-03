@@ -41,19 +41,29 @@ export default function PlanDay() {
         <div>
           {today.exercises.map((ex) => {
             const m = machineFor(ex.machineId);
+            const name = ex.machineName || m?.name_ar || '...';
+            const topMuscle = m?.target_muscles?.[0]?.label;
             return (
               <div key={ex.machineId} className="continue-row" onClick={() => navigate(`/log/${ex.machineId}`)}>
                 {m?.image_url ? (
-                  <img src={m.image_url} alt={ex.machineName} />
+                  <img src={m.image_url} alt={name} />
                 ) : (
                   <div style={{ width: 52, height: 52, borderRadius: 12, background: 'var(--surface-sunken)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Dumbbell size={20} style={{ color: 'var(--text-muted)' }} />
                   </div>
                 )}
                 <div className="cr-body">
-                  <p className="cr-title">{ex.machineName}</p>
+                  <p className="cr-title">{name}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>
+                    {(ex.sets || ex.reps) && `${ex.sets || 3} × ${ex.reps || 10}`}
+                    {ex.rest ? ` · راحة ${ex.rest}ث` : ''}
+                    {topMuscle ? ` · 🎯 ${topMuscle}` : ''}
+                  </p>
                   {ex.weight && (
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--iron)', fontWeight: 700 }}>{ex.weight} كغ</p>
+                  )}
+                  {ex.notes && (
+                    <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>📝 {ex.notes}</p>
                   )}
                 </div>
                 <div className="cr-play"><Play size={14} fill="currentColor" /></div>
